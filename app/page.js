@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function Accueil() {
   return (
     <main className="p-5">
@@ -8,9 +10,13 @@ export default function Accueil() {
           Gérez votre commerce simplement depuis votre téléphone.
         </p>
       </div>
-      <p className="mt-6 text-center text-sm text-slate-500">
-        Le site est en ligne ! Les pages arrivent bientôt.
-      </p>
+      <Link
+        href="/produits"
+        className="mt-6 flex items-center justify-between rounded-2xl bg-white p-5 shadow-sm"
+      >
+        <span className="text-base font-semibold">📦 Mes produits</span>
+        <span className="text-emerald-600">Ouvrir →</span>
+      </Link>
     </main>
   );
 }
