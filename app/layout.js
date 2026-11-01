@@ -1,4 +1,5 @@
 import "./globals.css";
+import NavBas from "../components/NavBas";
 
 export const metadata = {
   title: "Negoce — Gérez votre commerce simplement",
@@ -8,6 +9,7 @@ export const metadata = {
 export const viewport = {
   width: "device-width",
   initialScale: 1,
+  viewportFit: "cover",
   themeColor: "#059669",
 };
 
@@ -16,6 +18,7 @@ export default function RootLayout({ children }) {
     <html lang="fr">
       <body className="bg-slate-50 text-slate-900 antialiased">
         <div className="mx-auto min-h-screen max-w-lg">{children}</div>
+        <NavBas />
       </body>
     </html>
   );
