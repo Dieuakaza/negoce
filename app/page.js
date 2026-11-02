@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { getSupabase } from "../lib/supabase";
 import { fcfa } from "../lib/format";
+import Icone from "../components/Icone";
+import { Alerte } from "../components/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -9,6 +11,13 @@ const PERIODES = [
   { cle: "mois", nom: "Ce mois" },
   { cle: "tout", nom: "Tout" },
 ];
+
+const TONS = {
+  vert: "bg-emerald-100 text-emerald-700",
+  rouge: "bg-red-100 text-red-600",
+  bleu: "bg-sky-100 text-sky-700",
+  ambre: "bg-amber-100 text-amber-700",
+};
 
 function debutPeriode(cle) {
   if (cle === "tout") return null;
@@ -32,7 +41,16 @@ async function toutLire(construire) {
 }
 
 async function charger(cle) {
-  const vide = { chiffre: 0, gainVentes: 0, totalDepenses: 0, nbVentes: 0, benefice: 0, faibles: [], erreur: null };
+  const vide = {
+    chiffre: 0,
+    gainVentes: 0,
+    totalDepenses: 0,
+    nbVentes: 0,
+    benefice: 0,
+    faibles: [],
+    boutique: "",
+    erreur: null,
+  };
   try {
     const supabase = getSupabase();
     const debut = debutPeriode(cle);
@@ -57,6 +75,8 @@ async function charger(cle) {
       .limit(10);
     if (error) throw new Error(error.message);
 
+    const { data: boutiques } = await supabase.from("boutiques").select("nom").limit(1);
+
     let chiffre = 0;
     let gainVentes = 0;
     for (const v of ventes) {
@@ -74,6 +94,7 @@ async function charger(cle) {
       nbVentes: ventes.length,
       benefice: gainVentes - totalDepenses,
       faibles,
+      boutique: boutiques?.[0]?.nom || "",
       erreur: null,
     };
   } catch (e) {
@@ -81,11 +102,14 @@ async function charger(cle) {
   }
 }
 
-function Carte({ titre, valeur }) {
+function Carte({ titre, valeur, icone, ton }) {
   return (
-    <div className="rounded-2xl bg-white p-4 shadow-sm">
-      <p className="text-xs text-slate-500">{titre}</p>
-      <p className="mt-1 break-words text-lg font-bold">{valeur}</p>
+    <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-100">
+      <span className={"flex h-9 w-9 items-center justify-center rounded-xl " + TONS[ton]}>
+        <Icone nom={icone} />
+      </span>
+      <p className="mt-3 text-xs text-slate-500">{titre}</p>
+      <p className="mt-0.5 break-words text-lg font-bold">{valeur}</p>
     </div>
   );
 }
@@ -97,8 +121,8 @@ export default async function Accueil({ searchParams }) {
 
   return (
     <main className="p-5 pb-28">
-      <h1 className="text-xl font-bold">Negoce</h1>
-      <p className="text-sm text-slate-500">Votre tableau de bord</p>
+      <p className="text-sm text-slate-500">Bonjour</p>
+      <h1 className="text-2xl font-bold leading-tight">{r.boutique || "Ma boutique"}</h1>
 
       <div className="mt-4 flex gap-2">
         {PERIODES.map((p) => (
@@ -116,15 +140,18 @@ export default async function Accueil({ searchParams }) {
       </div>
 
       {r.erreur && (
-        <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
-          <p className="font-semibold">Connexion à la base de données impossible</p>
-          <p className="mt-1 break-words">{r.erreur}</p>
-        </div>
+        <Alerte type="erreur">
+          <p>Connexion à la base de données impossible</p>
+          <p className="mt-1 font-normal">{r.erreur}</p>
+        </Alerte>
       )}
 
       <div
         className={
-          "mt-4 rounded-3xl p-6 text-white shadow-lg " + (r.benefice < 0 ? "bg-red-600" : "bg-emerald-600")
+          "mt-4 rounded-3xl p-6 text-white shadow-lg " +
+          (r.benefice < 0
+            ? "bg-[linear-gradient(135deg,#ef4444,#b91c1c)]"
+            : "bg-[linear-gradient(135deg,#10b981,#047857)]")
         }
       >
         <p className="text-sm opacity-90">Bénéfice estimé</p>
@@ -135,10 +162,25 @@ export default async function Accueil({ searchParams }) {
       </div>
 
       <div className="mt-4 grid grid-cols-2 gap-3">
-        <Carte titre="Chiffre d’affaires" valeur={fcfa(r.chiffre)} />
-        <Carte titre="Dépenses" valeur={fcfa(r.totalDepenses)} />
-        <Carte titre="Nombre de ventes" valeur={String(r.nbVentes)} />
-        <Carte titre="Gain sur les ventes" valeur={fcfa(r.gainVentes)} />
+        <Link
+          href="/ventes"
+          className="flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-4 py-3.5 text-sm font-semibold text-white active:bg-slate-700"
+        >
+          <Icone nom="plus" /> Nouvelle vente
+        </Link>
+        <Link
+          href="/depenses"
+          className="flex items-center justify-center gap-2 rounded-2xl bg-white px-4 py-3.5 text-sm font-semibold text-slate-900 shadow-sm ring-1 ring-slate-200 active:bg-slate-50"
+        >
+          <Icone nom="plus" /> Nouvelle dépense
+        </Link>
+      </div>
+
+      <div className="mt-4 grid grid-cols-2 gap-3">
+        <Carte titre="Chiffre d’affaires" valeur={fcfa(r.chiffre)} icone="graphique" ton="vert" />
+        <Carte titre="Dépenses" valeur={fcfa(r.totalDepenses)} icone="billet" ton="rouge" />
+        <Carte titre="Nombre de ventes" valeur={String(r.nbVentes)} icone="sac" ton="bleu" />
+        <Carte titre="Gain sur les ventes" valeur={fcfa(r.gainVentes)} icone="graphique" ton="ambre" />
       </div>
 
       {r.faibles.length > 0 && (
@@ -146,9 +188,9 @@ export default async function Accueil({ searchParams }) {
           <p className="text-sm font-semibold text-amber-800">À réapprovisionner</p>
           <ul className="mt-2 space-y-1 text-sm text-amber-900">
             {r.faibles.map((p) => (
-              <li key={p.id} className="flex justify-between">
-                <span>{p.nom}</span>
-                <span className="font-semibold">
+              <li key={p.id} className="flex justify-between gap-3">
+                <span className="truncate">{p.nom}</span>
+                <span className="shrink-0 font-semibold">
                   {p.stock === 0 ? "Épuisé" : p.stock + " restant" + (p.stock > 1 ? "s" : "")}
                 </span>
               </li>
