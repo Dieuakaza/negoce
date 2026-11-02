@@ -1,5 +1,7 @@
 import { getSupabase } from "../../lib/supabase";
 import { seDeconnecter } from "../connexion/actions";
+import BoutonEnvoi from "../../components/BoutonEnvoi";
+import { EnTete } from "../../components/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -18,28 +20,32 @@ export default async function PageCompte() {
   const { email, boutique } = await charger();
 
   return (
-    <main className="p-5 pb-24">
-      <h1 className="text-2xl font-bold">Mon compte</h1>
+    <main className="p-5 pb-28">
+      <EnTete titre="Mon compte" icone="utilisateur" />
 
-      <div className="mt-5 space-y-3 rounded-2xl bg-white p-4 shadow-sm">
-        <div>
-          <p className="text-xs text-slate-500">Boutique</p>
-          <p className="font-semibold">{boutique || "—"}</p>
+      <section className="mt-5 rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-100">
+        <div className="flex items-center gap-4">
+          <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#10b981,#047857)] text-2xl font-bold text-white">
+            {(boutique || "N").charAt(0).toUpperCase()}
+          </span>
+          <div className="min-w-0">
+            <p className="truncate text-lg font-bold">{boutique || "Ma boutique"}</p>
+            <p className="truncate text-sm text-slate-500">{email}</p>
+          </div>
         </div>
-        <div>
-          <p className="text-xs text-slate-500">Adresse e-mail</p>
-          <p className="break-words font-semibold">{email || "—"}</p>
-        </div>
-      </div>
+      </section>
+
+      <p className="mt-4 rounded-2xl bg-slate-100 p-4 text-sm text-slate-600">
+        Les données de votre boutique ne sont visibles que depuis votre compte.
+      </p>
 
       <form action={seDeconnecter} className="mt-5">
-        <button
-          type="submit"
-          className="w-full rounded-xl border border-red-200 bg-white px-4 py-3 text-base font-semibold text-red-600 active:bg-red-50"
-        >
+        <BoutonEnvoi ton="contour" attente="Déconnexion…">
           Se déconnecter
-        </button>
+        </BoutonEnvoi>
       </form>
+
+      <p className="mt-6 text-center text-xs text-slate-400">Negoce · version de test</p>
     </main>
   );
 }
