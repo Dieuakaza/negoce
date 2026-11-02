@@ -1,14 +1,15 @@
 import { Inter } from "next/font/google";
 import "./globals.css";
 import NavBas from "../components/NavBas";
+import BarreMarque from "../components/BarreMarque";
 
 const inter = Inter({ subsets: ["latin"], display: "swap" });
 
 export const metadata = {
-  title: "Negoce — Gérez votre commerce simplement",
-  description: "Produits, ventes, dépenses et bénéfices, depuis votre téléphone.",
-  applicationName: "Negoce",
-  appleWebApp: { capable: true, title: "Negoce", statusBarStyle: "default" },
+  title: "NEGOCE — Vends mieux. Gère simplement.",
+  description: "Ta boutique en ligne, tes commandes et ta gestion depuis ton téléphone.",
+  applicationName: "NEGOCE",
+  appleWebApp: { capable: true, title: "NEGOCE", statusBarStyle: "default" },
   formatDetection: { telephone: false },
 };
 
@@ -25,7 +26,10 @@ export default function RootLayout({ children }) {
       <body
         className={inter.className + " bg-slate-50 text-slate-900 antialiased tabular-nums"}
       >
-        <div className="mx-auto min-h-screen max-w-lg">{children}</div>
+        <div className="mx-auto min-h-screen max-w-lg">
+          <BarreMarque />
+          {children}
+        </div>
         <NavBas />
       </body>
     </html>
