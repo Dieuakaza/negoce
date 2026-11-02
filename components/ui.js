@@ -36,7 +36,15 @@ export function Alerte({ type = "ok", children }) {
   );
 }
 
-export function Champ({ label, name, type = "number", defaultValue, placeholder }) {
+export function Champ({
+  label,
+  name,
+  type = "number",
+  defaultValue,
+  placeholder,
+  requis = true,
+  aide,
+}) {
   const estNombre = type === "number";
   return (
     <label className="block">
@@ -44,14 +52,32 @@ export function Champ({ label, name, type = "number", defaultValue, placeholder 
       <input
         name={name}
         type={type}
-        required
+        required={requis}
         min={estNombre ? 0 : undefined}
         step={estNombre ? 1 : undefined}
         inputMode={estNombre ? "numeric" : undefined}
-        defaultValue={defaultValue}
+        defaultValue={defaultValue ?? undefined}
         placeholder={placeholder}
         className={styleChamp}
       />
+      {aide && <span className="mt-1 block text-xs text-slate-500">{aide}</span>}
+    </label>
+  );
+}
+
+export function Zone({ label, name, defaultValue, placeholder, lignes = 3, maxLength, aide }) {
+  return (
+    <label className="block">
+      <span className="text-sm font-medium text-slate-700">{label}</span>
+      <textarea
+        name={name}
+        rows={lignes}
+        maxLength={maxLength}
+        defaultValue={defaultValue ?? undefined}
+        placeholder={placeholder}
+        className={styleChamp}
+      />
+      {aide && <span className="mt-1 block text-xs text-slate-500">{aide}</span>}
     </label>
   );
 }
