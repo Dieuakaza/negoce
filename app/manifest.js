@@ -1,8 +1,8 @@
 export default function manifest() {
   return {
-    name: "Negoce",
-    short_name: "Negoce",
-    description: "Gérez votre commerce simplement depuis votre téléphone.",
+    name: "NEGOCE",
+    short_name: "NEGOCE",
+    description: "Vends mieux. Gère simplement.",
     start_url: "/",
     display: "standalone",
     orientation: "portrait",
