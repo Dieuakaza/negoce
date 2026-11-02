@@ -9,14 +9,19 @@ const styles = {
 };
 
 // Bouton qui se bloque pendant l’enregistrement (évite les doubles envois)
-export default function BoutonEnvoi({ children, ton = "vert", attente = "Un instant…" }) {
+export default function BoutonEnvoi({
+  children,
+  ton = "vert",
+  attente = "Un instant…",
+  desactive = false,
+}) {
   const { pending } = useFormStatus();
   return (
     <button
       type="submit"
-      disabled={pending}
+      disabled={pending || desactive}
       className={
-        "w-full rounded-xl px-4 py-3 text-base font-semibold transition disabled:opacity-60 " +
+        "w-full rounded-xl px-4 py-3 text-base font-semibold transition disabled:opacity-50 " +
         styles[ton]
       }
     >
