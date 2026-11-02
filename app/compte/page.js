@@ -1,5 +1,7 @@
+import Link from "next/link";
 import { getSupabase } from "../../lib/supabase";
 import { seDeconnecter } from "../connexion/actions";
+import Icone from "../../components/Icone";
 import BoutonEnvoi from "../../components/BoutonEnvoi";
 import { EnTete } from "../../components/ui";
 
@@ -35,8 +37,22 @@ export default async function PageCompte() {
         </div>
       </section>
 
+      <Link
+        href="/boutique"
+        className="mt-4 flex items-center gap-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-100 active:bg-slate-50"
+      >
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
+          <Icone nom="sac" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="font-semibold">Ma boutique en ligne</p>
+          <p className="text-xs text-slate-500">Lien, WhatsApp, description</p>
+        </div>
+        <Icone nom="chevron" className="h-4 w-4 -rotate-90 text-slate-400" />
+      </Link>
+
       <p className="mt-4 rounded-2xl bg-slate-100 p-4 text-sm text-slate-600">
-        Les données de votre boutique ne sont visibles que depuis votre compte.
+        Les données de ta boutique ne sont visibles que depuis ton compte.
       </p>
 
       <form action={seDeconnecter} className="mt-5">
@@ -45,7 +61,7 @@ export default async function PageCompte() {
         </BoutonEnvoi>
       </form>
 
-      <p className="mt-6 text-center text-xs text-slate-400">Negoce · version de test</p>
+      <p className="mt-6 text-center text-xs text-slate-400">NEGOCE · version de test</p>
     </main>
   );
 }
