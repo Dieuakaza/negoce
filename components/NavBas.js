@@ -8,10 +8,13 @@ const onglets = [
   { href: "/produits", nom: "Produits", icone: "📦" },
   { href: "/ventes", nom: "Ventes", icone: "🛒" },
   { href: "/depenses", nom: "Dépenses", icone: "💸" },
+  { href: "/compte", nom: "Compte", icone: "👤" },
 ];
 
 export default function NavBas() {
   const chemin = usePathname();
+  if (chemin.startsWith("/connexion")) return null;
+
   return (
     <nav
       className="fixed inset-x-0 bottom-0 z-10 border-t border-slate-200 bg-white/95 backdrop-blur"
