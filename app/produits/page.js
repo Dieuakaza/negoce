@@ -1,7 +1,8 @@
-import Link from "next/link";
 import { getSupabase } from "../../lib/supabase";
 import { fcfa } from "../../lib/format";
 import { ajouterProduit, modifierProduit, supprimerProduit } from "./actions";
+import { EnTete, Alerte, Champ, Deplier, EtatVide } from "../../components/ui";
+import BoutonEnvoi from "../../components/BoutonEnvoi";
 
 export const dynamic = "force-dynamic";
 
@@ -18,71 +19,50 @@ async function chargerProduits() {
   }
 }
 
-function Champ({ label, name, type = "number", defaultValue, placeholder }) {
-  const estNombre = type === "number";
-  return (
-    <label className="block">
-      <span className="text-sm font-medium text-slate-700">{label}</span>
-      <input
-        name={name}
-        type={type}
-        required
-        min={estNombre ? 0 : undefined}
-        step={estNombre ? 1 : undefined}
-        inputMode={estNombre ? "numeric" : undefined}
-        defaultValue={defaultValue}
-        placeholder={placeholder}
-        className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-base outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200"
-      />
-    </label>
-  );
-}
-
 function Formulaire({ action, produit, bouton }) {
   return (
-    <form action={action} className="mt-4 space-y-3">
+    <form
+      action={action}
+      className="mt-3 space-y-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-100"
+    >
       {produit && <input type="hidden" name="id" value={produit.id} />}
       <Champ label="Nom du produit" name="nom" type="text" defaultValue={produit?.nom} placeholder="Ex : Robe en pagne" />
       <Champ label="Prix d’achat (FCFA)" name="prix_achat" defaultValue={produit?.prix_achat} placeholder="Ex : 5000" />
       <Champ label="Prix de vente (FCFA)" name="prix_vente" defaultValue={produit?.prix_vente} placeholder="Ex : 8000" />
       <Champ label="Quantité en stock" name="stock" defaultValue={produit?.stock} placeholder="Ex : 10" />
-      <button
-        type="submit"
-        className="w-full rounded-xl bg-emerald-600 px-4 py-3 text-base font-semibold text-white active:bg-emerald-700"
-      >
-        {bouton}
-      </button>
+      <BoutonEnvoi>{bouton}</BoutonEnvoi>
     </form>
   );
 }
 
 export default async function PageProduits() {
   const { produits, erreur } = await chargerProduits();
+  const n = produits.length;
 
   return (
-    <main className="p-5 pb-24">
-      <Link href="/" className="text-sm text-emerald-700">← Accueil</Link>
-      <h1 className="mt-2 text-2xl font-bold">Mes produits</h1>
-      <p className="mt-1 text-sm text-slate-500">
-        {produits.length} produit{produits.length > 1 ? "s" : ""}
-      </p>
+    <main className="p-5 pb-28">
+      <EnTete titre="Produits" icone="boite" sous={n + " produit" + (n > 1 ? "s" : "")} />
 
       {erreur && (
-        <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
-          <p className="font-semibold">Connexion à la base de données impossible</p>
-          <p className="mt-1 break-words">{erreur}</p>
-        </div>
+        <Alerte type="erreur">
+          <p>Connexion à la base de données impossible</p>
+          <p className="mt-1 font-normal">{erreur}</p>
+        </Alerte>
       )}
 
-      <details
-        open={produits.length === 0 && !erreur}
-        className="mt-5 rounded-2xl bg-white p-4 shadow-sm"
-      >
-        <summary className="cursor-pointer text-base font-semibold text-emerald-700">
-          + Ajouter un produit
-        </summary>
-        <Formulaire action={ajouterProduit} bouton="Enregistrer le produit" />
-      </details>
+      <div className="mt-5">
+        <Deplier titre="Ajouter un produit" icone="plus" ton="principal" ouvert={n === 0 && !erreur}>
+          <Formulaire action={ajouterProduit} bouton="Enregistrer le produit" />
+        </Deplier>
+      </div>
+
+      {!erreur && n === 0 && (
+        <EtatVide
+          icone="boite"
+          titre="Aucun produit pour l’instant"
+          texte="Ajoutez votre premier produit avec le bouton vert ci-dessus."
+        />
+      )}
 
       <ul className="mt-5 space-y-3">
         {produits.map((p) => {
@@ -94,61 +74,57 @@ export default async function PageProduits() {
               ? "bg-amber-100 text-amber-700"
               : "bg-emerald-100 text-emerald-700";
           return (
-            <li key={p.id} className="rounded-2xl bg-white p-4 shadow-sm">
-              <div className="flex items-start justify-between gap-3">
-                <h2 className="text-base font-semibold">{p.nom}</h2>
-                <span className={"shrink-0 rounded-full px-3 py-1 text-xs font-semibold " + etat}>
-                  {p.stock === 0 ? "Épuisé" : p.stock + " en stock"}
+            <li key={p.id} className="rounded-3xl bg-white p-4 shadow-sm ring-1 ring-slate-100">
+              <div className="flex items-center gap-3">
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-100 text-lg font-bold text-emerald-700">
+                  {p.nom.charAt(0).toUpperCase()}
                 </span>
-              </div>
-
-              <div className="mt-3 space-y-1 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Prix d’achat</span>
-                  <span>{fcfa(p.prix_achat)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Prix de vente</span>
-                  <span>{fcfa(p.prix_vente)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Gain par pièce</span>
-                  <span className={gain >= 0 ? "font-semibold text-emerald-700" : "font-semibold text-red-600"}>
-                    {fcfa(gain)}
+                <div className="min-w-0 flex-1">
+                  <h2 className="truncate text-base font-semibold">{p.nom}</h2>
+                  <span
+                    className={
+                      "mt-1 inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold " + etat
+                    }
+                  >
+                    {p.stock === 0 ? "Épuisé" : p.stock + " en stock"}
                   </span>
                 </div>
+                <div className="shrink-0 text-right">
+                  <p className="text-xs text-slate-500">Prix de vente</p>
+                  <p className="font-bold">{fcfa(p.prix_vente)}</p>
+                </div>
               </div>
 
-              <details className="mt-3 border-t border-slate-100 pt-3">
-                <summary className="cursor-pointer text-sm font-semibold text-slate-700">Modifier</summary>
-                <Formulaire action={modifierProduit} produit={p} bouton="Enregistrer les changements" />
-              </details>
+              <div className="mt-4 grid grid-cols-2 gap-2 text-sm">
+                <div className="rounded-xl bg-slate-50 p-3">
+                  <p className="text-xs text-slate-500">Prix d’achat</p>
+                  <p className="font-semibold">{fcfa(p.prix_achat)}</p>
+                </div>
+                <div className={"rounded-xl p-3 " + (gain >= 0 ? "bg-emerald-50" : "bg-red-50")}>
+                  <p className="text-xs text-slate-500">Gain par pièce</p>
+                  <p className={"font-semibold " + (gain >= 0 ? "text-emerald-700" : "text-red-600")}>
+                    {fcfa(gain)}
+                  </p>
+                </div>
+              </div>
 
-              <details className="mt-2">
-                <summary className="cursor-pointer text-sm font-semibold text-red-600">Supprimer</summary>
+              <Deplier titre="Modifier" icone="crayon">
+                <Formulaire action={modifierProduit} produit={p} bouton="Enregistrer les changements" />
+              </Deplier>
+
+              <Deplier titre="Supprimer" icone="corbeille" ton="danger">
                 <form action={supprimerProduit} className="mt-3 space-y-3">
                   <input type="hidden" name="id" value={p.id} />
                   <p className="text-sm text-slate-600">
                     Cette action est définitive. Voulez-vous vraiment supprimer « {p.nom} » ?
                   </p>
-                  <button
-                    type="submit"
-                    className="w-full rounded-xl bg-red-600 px-4 py-3 text-base font-semibold text-white active:bg-red-700"
-                  >
-                    Oui, supprimer
-                  </button>
+                  <BoutonEnvoi ton="rouge">Oui, supprimer</BoutonEnvoi>
                 </form>
-              </details>
+              </Deplier>
             </li>
           );
         })}
       </ul>
-
-      {!erreur && produits.length === 0 && (
-        <p className="mt-8 text-center text-sm text-slate-500">
-          Aucun produit pour l’instant. Ajoutez le premier !
-        </p>
-      )}
     </main>
   );
 }
