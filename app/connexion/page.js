@@ -1,50 +1,46 @@
 import Link from "next/link";
 import { seConnecter, creerCompte } from "./actions";
+import { Marque } from "../../components/Marque";
+import BoutonEnvoi from "../../components/BoutonEnvoi";
+import { Alerte, styleChamp } from "../../components/ui";
 
 export const dynamic = "force-dynamic";
-
-const styleChamp =
-  "mt-1 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-base outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200";
 
 export default async function PageConnexion({ searchParams }) {
   const params = await searchParams;
   const inscription = params?.mode === "inscription";
   const onglet = (actif) =>
-    "flex-1 rounded-full px-3 py-2 text-center text-sm font-semibold " +
-    (actif ? "bg-slate-900 text-white" : "bg-white text-slate-700 shadow-sm");
+    "flex-1 rounded-full px-3 py-2.5 text-center text-sm font-semibold transition " +
+    (actif ? "bg-slate-900 text-white" : "bg-white text-slate-700 shadow-sm ring-1 ring-slate-100");
 
   return (
     <main className="flex min-h-screen flex-col justify-center p-5">
-      <div className="rounded-3xl bg-emerald-600 p-6 text-white shadow-lg">
-        <h1 className="text-3xl font-bold">Negoce</h1>
-        <p className="mt-2 text-sm opacity-90">
-          Gérez votre commerce simplement depuis votre téléphone.
+      <div className="rounded-3xl bg-[linear-gradient(135deg,#10b981,#047857)] p-6 text-white shadow-lg">
+        <Marque clair slogan />
+        <p className="mt-5 text-sm leading-relaxed text-white/90">
+          Ta boutique en ligne, tes commandes et ta gestion, au même endroit.
         </p>
       </div>
 
       <div className="mt-5 flex gap-2">
-        <Link href="/connexion" className={onglet(!inscription)}>Se connecter</Link>
-        <Link href="/connexion?mode=inscription" className={onglet(inscription)}>Créer un compte</Link>
+        <Link href="/connexion" className={onglet(!inscription)}>
+          Se connecter
+        </Link>
+        <Link href="/connexion?mode=inscription" className={onglet(inscription)}>
+          Créer un compte
+        </Link>
       </div>
 
-      {params?.info && (
-        <div className="mt-4 rounded-2xl bg-emerald-50 p-4 text-sm font-semibold text-emerald-800">
-          {params.info}
-        </div>
-      )}
-      {params?.erreur && (
-        <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-semibold text-red-800">
-          {params.erreur}
-        </div>
-      )}
+      {params?.info && <Alerte>{params.info}</Alerte>}
+      {params?.erreur && <Alerte type="erreur">{params.erreur}</Alerte>}
 
       <form
         action={inscription ? creerCompte : seConnecter}
-        className="mt-4 space-y-3 rounded-2xl bg-white p-4 shadow-sm"
+        className="mt-4 space-y-3 rounded-3xl bg-white p-4 shadow-sm ring-1 ring-slate-100"
       >
         {inscription && (
           <label className="block">
-            <span className="text-sm font-medium text-slate-700">Nom de votre boutique (facultatif)</span>
+            <span className="text-sm font-medium text-slate-700">Nom de ta boutique (facultatif)</span>
             <input name="boutique" type="text" placeholder="Ex : Chez Awa" className={styleChamp} />
           </label>
         )}
@@ -56,7 +52,7 @@ export default async function PageConnexion({ searchParams }) {
             required
             autoComplete="email"
             inputMode="email"
-            placeholder="vous@exemple.com"
+            placeholder="toi@exemple.com"
             className={styleChamp}
           />
         </label>
@@ -72,12 +68,9 @@ export default async function PageConnexion({ searchParams }) {
             className={styleChamp}
           />
         </label>
-        <button
-          type="submit"
-          className="w-full rounded-xl bg-emerald-600 px-4 py-3 text-base font-semibold text-white active:bg-emerald-700"
-        >
+        <BoutonEnvoi attente={inscription ? "Création…" : "Connexion…"}>
           {inscription ? "Créer mon compte" : "Me connecter"}
-        </button>
+        </BoutonEnvoi>
       </form>
     </main>
   );
