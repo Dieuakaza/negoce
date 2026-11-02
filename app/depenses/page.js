@@ -1,12 +1,22 @@
-import Link from "next/link";
 import { getSupabase } from "../../lib/supabase";
 import { fcfa } from "../../lib/format";
 import { ajouterDepense, supprimerDepense } from "./actions";
+import Icone from "../../components/Icone";
+import BoutonEnvoi from "../../components/BoutonEnvoi";
+import { EnTete, Alerte, Deplier, EtatVide, styleChamp } from "../../components/ui";
 
 export const dynamic = "force-dynamic";
 
-const styleChamp =
-  "mt-1 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-base outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200";
+const SUGGESTIONS = [
+  "Transport",
+  "Loyer",
+  "Électricité",
+  "Emballages",
+  "Réapprovisionnement",
+  "Téléphone et internet",
+  "Taxes et patente",
+  "Salaire",
+];
 
 async function charger() {
   try {
@@ -38,76 +48,93 @@ export default async function PageDepenses({ searchParams }) {
   const aujourdhui = new Date().toISOString().slice(0, 10);
 
   return (
-    <main className="p-5 pb-24">
-      <Link href="/" className="text-sm text-emerald-700">← Accueil</Link>
-      <h1 className="mt-2 text-2xl font-bold">Mes dépenses</h1>
+    <main className="p-5 pb-28">
+      <EnTete titre="Dépenses" icone="billet" sous="Notez ce que vous dépensez pour votre commerce" />
 
-      {params?.ok && (
-        <div className="mt-4 rounded-2xl bg-emerald-50 p-4 text-sm font-semibold text-emerald-800">
-          ✓ Dépense enregistrée.
-        </div>
-      )}
-      {params?.erreur && (
-        <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-semibold text-red-800">
-          {params.erreur}
-        </div>
-      )}
+      {params?.ok && <Alerte>Dépense enregistrée.</Alerte>}
+      {params?.erreur && <Alerte type="erreur">{params.erreur}</Alerte>}
       {erreur && (
-        <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
-          <p className="font-semibold">Connexion à la base de données impossible</p>
-          <p className="mt-1 break-words">{erreur}</p>
-        </div>
+        <Alerte type="erreur">
+          <p>Connexion à la base de données impossible</p>
+          <p className="mt-1 font-normal">{erreur}</p>
+        </Alerte>
       )}
 
-      <form action={ajouterDepense} className="mt-5 space-y-3 rounded-2xl bg-white p-4 shadow-sm">
+      <form
+        action={ajouterDepense}
+        className="mt-5 space-y-3 rounded-3xl bg-white p-4 shadow-sm ring-1 ring-slate-100"
+      >
         <h2 className="text-base font-semibold">Nouvelle dépense</h2>
         <label className="block">
           <span className="text-sm font-medium text-slate-700">Description</span>
-          <input name="description" type="text" required placeholder="Ex : Transport, loyer, sacs…" className={styleChamp} />
+          <input
+            name="description"
+            type="text"
+            required
+            list="suggestions"
+            placeholder="Ex : Transport, loyer, sacs…"
+            className={styleChamp}
+          />
+          <datalist id="suggestions">
+            {SUGGESTIONS.map((s) => (
+              <option key={s} value={s} />
+            ))}
+          </datalist>
         </label>
         <label className="block">
           <span className="text-sm font-medium text-slate-700">Montant (FCFA)</span>
-          <input name="montant" type="number" required min={1} step={1} inputMode="numeric" placeholder="Ex : 2000" className={styleChamp} />
+          <input
+            name="montant"
+            type="number"
+            required
+            min={1}
+            step={1}
+            inputMode="numeric"
+            placeholder="Ex : 2000"
+            className={styleChamp}
+          />
         </label>
         <label className="block">
           <span className="text-sm font-medium text-slate-700">Date</span>
-          <input name="date_depense" type="date" required defaultValue={aujourdhui} className={styleChamp} />
+          <input
+            name="date_depense"
+            type="date"
+            required
+            defaultValue={aujourdhui}
+            className={styleChamp + " min-w-0"}
+          />
         </label>
-        <button
-          type="submit"
-          className="w-full rounded-xl bg-emerald-600 px-4 py-3 text-base font-semibold text-white active:bg-emerald-700"
-        >
-          Enregistrer la dépense
-        </button>
+        <BoutonEnvoi>Enregistrer la dépense</BoutonEnvoi>
       </form>
 
       <h2 className="mt-8 text-lg font-semibold">Dernières dépenses</h2>
       {depenses.length === 0 ? (
-        <p className="mt-3 text-sm text-slate-500">Aucune dépense pour l’instant.</p>
+        <EtatVide
+          icone="billet"
+          titre="Aucune dépense pour l’instant"
+          texte="Vos dépenses apparaîtront ici et seront déduites de votre bénéfice."
+        />
       ) : (
         <ul className="mt-3 space-y-3">
           {depenses.map((d) => (
-            <li key={d.id} className="rounded-2xl bg-white p-4 shadow-sm">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="font-semibold">{d.description}</p>
-                  <p className="mt-1 text-xs text-slate-500">{formaterDate(d.date_depense)}</p>
+            <li key={d.id} className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-100">
+              <div className="flex items-center gap-3">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-red-100 text-red-600">
+                  <Icone nom="billet" />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-semibold">{d.description}</p>
+                  <p className="mt-0.5 text-xs text-slate-500">{formaterDate(d.date_depense)}</p>
                 </div>
-                <p className="font-semibold text-red-600">− {fcfa(d.montant)}</p>
+                <p className="shrink-0 font-bold text-red-600">− {fcfa(d.montant)}</p>
               </div>
-              <details className="mt-3">
-                <summary className="cursor-pointer text-sm font-semibold text-red-600">Supprimer</summary>
+              <Deplier titre="Supprimer" icone="corbeille" ton="danger">
                 <form action={supprimerDepense} className="mt-3 space-y-3">
                   <input type="hidden" name="id" value={d.id} />
                   <p className="text-sm text-slate-600">Supprimer cette dépense définitivement ?</p>
-                  <button
-                    type="submit"
-                    className="w-full rounded-xl bg-red-600 px-4 py-3 text-base font-semibold text-white active:bg-red-700"
-                  >
-                    Oui, supprimer
-                  </button>
+                  <BoutonEnvoi ton="rouge">Oui, supprimer</BoutonEnvoi>
                 </form>
-              </details>
+              </Deplier>
             </li>
           ))}
         </ul>
