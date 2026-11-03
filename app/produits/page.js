@@ -1,27 +1,38 @@
 import { getSupabase } from "../../lib/supabase";
 import { fcfa } from "../../lib/format";
-import { ajouterProduit, modifierProduit, supprimerProduit } from "./actions";
+import { urlPhoto } from "../../lib/photos";
+import { ajouterProduit, modifierProduit } from "./actions";
+import { ajouterPhoto, supprimerPhoto, photoEnPremier, supprimerProduitEtPhotos } from "./photos";
 import { EnTete, Alerte, Champ, Zone, Deplier, EtatVide } from "../../components/ui";
 import BoutonEnvoi from "../../components/BoutonEnvoi";
+import PhotosProduit from "../../components/PhotosProduit";
 
 export const dynamic = "force-dynamic";
 
 const MESSAGES = {
-  ajoute: "Produit ajouté.",
+  ajoute: "Produit ajouté. Ouvre « Photos » sur sa carte pour ajouter des images.",
   modifie: "Modifications enregistrées.",
   supprime: "Produit supprimé.",
 };
 
 async function chargerProduits() {
   try {
-    const { data, error } = await getSupabase()
-      .from("produits")
-      .select("*")
-      .order("created_at", { ascending: false });
-    if (error) return { produits: [], erreur: error.message };
-    return { produits: data, erreur: null };
+    const supabase = getSupabase();
+    const [produits, photos] = await Promise.all([
+      supabase.from("produits").select("*").order("created_at", { ascending: false }),
+      supabase
+        .from("produit_photos")
+        .select("id, produit_id, chemin, ordre")
+        .order("ordre", { ascending: true }),
+    ]);
+    const erreur = produits.error?.message || photos.error?.message || null;
+    const parProduit = {};
+    for (const ph of photos.data || []) {
+      (parProduit[ph.produit_id] ||= []).push({ id: ph.id, url: urlPhoto(ph.chemin) });
+    }
+    return { produits: produits.data || [], photos: parProduit, erreur };
   } catch (e) {
-    return { produits: [], erreur: e.message };
+    return { produits: [], photos: {}, erreur: e.message };
   }
 }
 
@@ -93,7 +104,7 @@ function Formulaire({ action, produit, bouton }) {
 
 export default async function PageProduits({ searchParams }) {
   const params = await searchParams;
-  const { produits, erreur } = await chargerProduits();
+  const { produits, photos, erreur } = await chargerProduits();
   const n = produits.length;
 
   return (
@@ -125,6 +136,7 @@ export default async function PageProduits({ searchParams }) {
 
       <ul className="mt-5 space-y-3">
         {produits.map((p) => {
+          const mesPhotos = photos[p.id] || [];
           const enPromo = p.prix_promo !== null && p.prix_promo !== undefined;
           const prixEffectif = enPromo ? Number(p.prix_promo) : Number(p.prix_vente);
           const gain = prixEffectif - Number(p.prix_achat);
@@ -139,9 +151,17 @@ export default async function PageProduits({ searchParams }) {
           return (
             <li key={p.id} className="rounded-3xl bg-white p-4 shadow-sm ring-1 ring-slate-100">
               <div className="flex items-center gap-3">
-                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-100 text-lg font-bold text-emerald-700">
-                  {p.nom.charAt(0).toUpperCase()}
-                </span>
+                {mesPhotos[0] ? (
+                  <img
+                    src={mesPhotos[0].url}
+                    alt=""
+                    className="h-14 w-14 shrink-0 rounded-2xl object-cover"
+                  />
+                ) : (
+                  <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-emerald-100 text-lg font-bold text-emerald-700">
+                    {p.nom.charAt(0).toUpperCase()}
+                  </span>
+                )}
                 <div className="min-w-0 flex-1">
                   <h2 className="truncate text-base font-semibold">{p.nom}</h2>
                   <div className="mt-1 flex flex-wrap gap-1.5">
@@ -202,15 +222,25 @@ export default async function PageProduits({ searchParams }) {
                 </div>
               </div>
 
+              <Deplier titre={"Photos (" + mesPhotos.length + ")"}>
+                <PhotosProduit
+                  produitId={p.id}
+                  photos={mesPhotos}
+                  ajouter={ajouterPhoto}
+                  supprimer={supprimerPhoto}
+                  principale={photoEnPremier}
+                />
+              </Deplier>
+
               <Deplier titre="Modifier" icone="crayon">
                 <Formulaire action={modifierProduit} produit={p} bouton="Enregistrer les changements" />
               </Deplier>
 
               <Deplier titre="Supprimer" icone="corbeille" ton="danger">
-                <form action={supprimerProduit} className="mt-3 space-y-3">
+                <form action={supprimerProduitEtPhotos} className="mt-3 space-y-3">
                   <input type="hidden" name="id" value={p.id} />
                   <p className="text-sm text-slate-600">
-                    Cette action est définitive. Veux-tu vraiment supprimer « {p.nom} » ?
+                    Cette action est définitive et supprime aussi les photos. Veux-tu vraiment supprimer « {p.nom} » ?
                   </p>
                   <BoutonEnvoi ton="rouge">Oui, supprimer</BoutonEnvoi>
                 </form>
