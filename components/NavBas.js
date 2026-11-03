@@ -54,7 +54,7 @@ const onglets = [
 
 export default function NavBas() {
   const chemin = usePathname();
-  if (chemin.startsWith("/connexion")) return null;
+  if (chemin.startsWith("/connexion") || chemin.startsWith("/b/")) return null;
 
   return (
     <nav
