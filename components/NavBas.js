@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -21,22 +22,22 @@ const onglets = [
     ),
   },
   {
+    href: "/commandes",
+    nom: "Commandes",
+    dessin: (
+      <>
+        <rect x="5" y="4" width="14" height="17" rx="2" />
+        <path d="M9 4h6v3H9zM9 12h6M9 16h4" />
+      </>
+    ),
+  },
+  {
     href: "/ventes",
     nom: "Ventes",
     dessin: (
       <>
         <path d="M6 8h12l1 12H5z" />
         <path d="M9 8a3 3 0 0 1 6 0" />
-      </>
-    ),
-  },
-  {
-    href: "/depenses",
-    nom: "Dépenses",
-    dessin: (
-      <>
-        <rect x="3" y="6" width="18" height="12" rx="2" />
-        <circle cx="12" cy="12" r="2.5" />
       </>
     ),
   },
@@ -54,7 +55,30 @@ const onglets = [
 
 export default function NavBas() {
   const chemin = usePathname();
-  if (chemin.startsWith("/connexion") || chemin.startsWith("/b/")) return null;
+  const [nouvelles, setNouvelles] = useState(0);
+  const masquee = chemin.startsWith("/connexion") || chemin.startsWith("/b/");
+
+  // Compte les nouvelles commandes (au chargement, puis toutes les 30 secondes)
+  useEffect(() => {
+    if (masquee) return;
+    let actif = true;
+    function lire() {
+      fetch("/api/nouvelles", { cache: "no-store" })
+        .then((reponse) => reponse.json())
+        .then((donnees) => {
+          if (actif) setNouvelles(Number(donnees.n) || 0);
+        })
+        .catch(() => {});
+    }
+    lire();
+    const minuteur = setInterval(lire, 30000);
+    return () => {
+      actif = false;
+      clearInterval(minuteur);
+    };
+  }, [chemin, masquee]);
+
+  if (masquee) return null;
 
   return (
     <nav
@@ -75,7 +99,7 @@ export default function NavBas() {
               >
                 <span
                   className={
-                    "flex h-8 w-14 items-center justify-center rounded-full " +
+                    "relative flex h-8 w-14 items-center justify-center rounded-full " +
                     (actif ? "bg-emerald-100" : "")
                   }
                 >
@@ -90,6 +114,11 @@ export default function NavBas() {
                   >
                     {o.dessin}
                   </svg>
+                  {o.href === "/commandes" && nouvelles > 0 && (
+                    <span className="absolute right-1.5 top-0 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1 text-[11px] font-bold text-white">
+                      {nouvelles > 9 ? "9+" : nouvelles}
+                    </span>
+                  )}
                 </span>
                 {o.nom}
               </Link>
