@@ -18,6 +18,24 @@ async function charger() {
   }
 }
 
+function Lien({ href, icone, titre, sous }) {
+  return (
+    <Link
+      href={href}
+      className="mt-3 flex items-center gap-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-100 active:bg-slate-50"
+    >
+      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
+        <Icone nom={icone} />
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="font-semibold">{titre}</p>
+        <p className="text-xs text-slate-500">{sous}</p>
+      </div>
+      <Icone nom="chevron" className="h-4 w-4 -rotate-90 text-slate-400" />
+    </Link>
+  );
+}
+
 export default async function PageCompte() {
   const { email, boutique } = await charger();
 
@@ -37,19 +55,10 @@ export default async function PageCompte() {
         </div>
       </section>
 
-      <Link
-        href="/boutique"
-        className="mt-4 flex items-center gap-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-100 active:bg-slate-50"
-      >
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
-          <Icone nom="sac" />
-        </span>
-        <div className="min-w-0 flex-1">
-          <p className="font-semibold">Ma boutique en ligne</p>
-          <p className="text-xs text-slate-500">Lien, WhatsApp, description</p>
-        </div>
-        <Icone nom="chevron" className="h-4 w-4 -rotate-90 text-slate-400" />
-      </Link>
+      <div className="mt-1">
+        <Lien href="/boutique" icone="sac" titre="Ma boutique en ligne" sous="Lien, WhatsApp, description" />
+        <Lien href="/depenses" icone="billet" titre="Mes dépenses" sous="Transport, loyer, achats…" />
+      </div>
 
       <p className="mt-4 rounded-2xl bg-slate-100 p-4 text-sm text-slate-600">
         Les données de ta boutique ne sont visibles que depuis ton compte.
