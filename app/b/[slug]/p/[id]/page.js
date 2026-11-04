@@ -6,6 +6,7 @@ import { urlPhoto } from "../../../../../lib/photos";
 import { fcfa } from "../../../../../lib/format";
 import BoutonPartager from "../../../../../components/BoutonPartager";
 import BoutonWhatsapp from "../../../../../components/BoutonWhatsapp";
+import FormulaireCommande from "../../../../../components/FormulaireCommande";
 
 export const revalidate = 30;
 
@@ -44,7 +45,7 @@ export async function generateMetadata({ params }) {
   const titre = produit.nom + " — " + fcfa(prix);
   const description = produit.description
     ? produit.description.slice(0, 160)
-    : "Disponible chez " + boutique.nom + ". Commande sur WhatsApp.";
+    : "Disponible chez " + boutique.nom + ". Commande en ligne ou sur WhatsApp.";
 
   return {
     title: titre + " · " + boutique.nom,
@@ -72,9 +73,9 @@ export default async function PageProduitPublic({ params }) {
   const epuise = produit.disponible <= 0;
   const tailles = produit.tailles || [];
   const couleurs = produit.couleurs || [];
-  const message = epuise
+  const messageQuestion = epuise
     ? "Bonjour " + boutique.nom + ", « " + produit.nom + " » sera-t-il bientôt de nouveau disponible ?"
-    : "Bonjour " + boutique.nom + ", je souhaite commander « " + produit.nom + " » à " + fcfa(prix) + ".";
+    : "Bonjour " + boutique.nom + ", j’ai une question sur « " + produit.nom + " ».";
 
   return (
     <main className="pb-32 pt-4">
@@ -143,59 +144,75 @@ export default async function PageProduitPublic({ params }) {
           </p>
         )}
 
-        {tailles.length > 0 && (
-          <div className="mt-5">
-            <p className="text-sm font-semibold">Tailles</p>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {tailles.map((t) => (
-                <span key={t} className="rounded-xl bg-white px-3.5 py-2 text-sm font-medium shadow-sm ring-1 ring-slate-200">
-                  {t}
-                </span>
-              ))}
-            </div>
-          </div>
+        {epuise && (
+          <p className="mt-6 rounded-2xl bg-red-50 p-4 text-sm font-semibold text-red-700">
+            Ce produit est épuisé pour le moment. Demande-nous sur WhatsApp quand il sera de retour.
+          </p>
         )}
+      </div>
 
-        {couleurs.length > 0 && (
-          <div className="mt-5">
-            <p className="text-sm font-semibold">Couleurs</p>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {couleurs.map((c) => (
-                <span key={c} className="rounded-xl bg-white px-3.5 py-2 text-sm font-medium shadow-sm ring-1 ring-slate-200">
-                  {c}
-                </span>
-              ))}
-            </div>
-          </div>
+      {!epuise && (
+        <FormulaireCommande
+          slug={boutique.slug}
+          nomBoutique={boutique.nom}
+          whatsapp={boutique.whatsapp}
+          produit={{
+            id: produit.id,
+            nom: produit.nom,
+            prix,
+            disponible: produit.disponible,
+            tailles,
+            couleurs,
+          }}
+        />
+      )}
+
+      <div className="space-y-3 px-5 pt-6">
+        {boutique.whatsapp && (
+          <BoutonWhatsapp
+            numero={boutique.whatsapp}
+            message={messageQuestion}
+            className="flex w-full items-center justify-center rounded-xl bg-white px-4 py-3 text-sm font-semibold text-emerald-700 shadow-sm ring-1 ring-slate-200 active:bg-slate-50"
+          >
+            Poser une question sur WhatsApp
+          </BoutonWhatsapp>
         )}
-
         <BoutonPartager
           titre={produit.nom}
           texte={produit.nom + " — " + fcfa(prix) + " chez " + boutique.nom}
-          className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm ring-1 ring-slate-200 active:bg-slate-50"
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm ring-1 ring-slate-200 active:bg-slate-50"
         />
       </div>
 
-      {boutique.whatsapp && (
-        <div
-          className="fixed inset-x-0 bottom-0 z-10 border-t border-slate-200 bg-white/95 backdrop-blur"
-          style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
-        >
-          <div className="mx-auto flex max-w-lg items-center gap-3 px-5 py-3">
-            <div className="shrink-0">
-              <p className="text-xs text-slate-500">Prix</p>
-              <p className="font-extrabold">{fcfa(prix)}</p>
-            </div>
-            <BoutonWhatsapp
-              numero={boutique.whatsapp}
-              message={message}
+      <div
+        className="fixed inset-x-0 bottom-0 z-10 border-t border-slate-200 bg-white/95 backdrop-blur"
+        style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+      >
+        <div className="mx-auto flex max-w-lg items-center gap-3 px-5 py-3">
+          <div className="shrink-0">
+            <p className="text-xs text-slate-500">Prix</p>
+            <p className="font-extrabold">{fcfa(prix)}</p>
+          </div>
+          {epuise ? (
+            boutique.whatsapp && (
+              <BoutonWhatsapp
+                numero={boutique.whatsapp}
+                message={messageQuestion}
+                className="flex-1 rounded-xl bg-emerald-600 px-4 py-3 text-center text-base font-semibold text-white active:bg-emerald-700"
+              >
+                Demander la disponibilité
+              </BoutonWhatsapp>
+            )
+          ) : (
+            <a
+              href="#commander"
               className="flex-1 rounded-xl bg-emerald-600 px-4 py-3 text-center text-base font-semibold text-white active:bg-emerald-700"
             >
-              {epuise ? "Demander la disponibilité" : "Commander sur WhatsApp"}
-            </BoutonWhatsapp>
-          </div>
+              Commander
+            </a>
+          )}
         </div>
-      )}
+      </div>
     </main>
   );
 }
