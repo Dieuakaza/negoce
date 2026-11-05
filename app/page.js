@@ -49,6 +49,8 @@ async function charger(cle) {
     benefice: 0,
     faibles: [],
     boutique: "",
+    aTraiter: 0,
+    enCours: 0,
     erreur: null,
   };
   try {
@@ -77,6 +79,14 @@ async function charger(cle) {
 
     const { data: boutiques } = await supabase.from("boutiques").select("nom").limit(1);
 
+    const [aTraiter, enCours] = await Promise.all([
+      supabase.from("commandes").select("id", { count: "exact", head: true }).eq("statut", "nouvelle"),
+      supabase
+        .from("commandes")
+        .select("id", { count: "exact", head: true })
+        .in("statut", ["confirmee", "preparation", "livraison"]),
+    ]);
+
     let chiffre = 0;
     let gainVentes = 0;
     for (const v of ventes) {
@@ -95,6 +105,8 @@ async function charger(cle) {
       benefice: gainVentes - totalDepenses,
       faibles,
       boutique: boutiques?.[0]?.nom || "",
+      aTraiter: aTraiter.count || 0,
+      enCours: enCours.count || 0,
       erreur: null,
     };
   } catch (e) {
@@ -123,6 +135,39 @@ export default async function Accueil({ searchParams }) {
     <main className="p-5 pb-28">
       <p className="text-sm text-slate-500">Bonjour</p>
       <h1 className="text-2xl font-bold leading-tight">{r.boutique || "Ma boutique"}</h1>
+
+      {r.aTraiter > 0 ? (
+        <Link
+          href="/commandes?vue=traiter"
+          className="mt-4 flex items-center gap-3 rounded-2xl bg-amber-100 p-4 text-amber-900 active:bg-amber-200"
+        >
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-500 text-lg font-extrabold text-white">
+            {r.aTraiter}
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="font-bold">
+              {r.aTraiter} nouvelle{r.aTraiter > 1 ? "s" : ""} commande{r.aTraiter > 1 ? "s" : ""} à traiter
+            </p>
+            <p className="text-xs">Confirme-les pour retirer les articles du stock.</p>
+          </div>
+          <Icone nom="chevron" className="h-4 w-4 -rotate-90" />
+        </Link>
+      ) : (
+        r.enCours > 0 && (
+          <Link
+            href="/commandes?vue=cours"
+            className="mt-4 flex items-center gap-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-100 active:bg-slate-50"
+          >
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-100 text-sky-700">
+              <Icone nom="sac" />
+            </span>
+            <p className="min-w-0 flex-1 text-sm font-semibold">
+              {r.enCours} commande{r.enCours > 1 ? "s" : ""} en cours de livraison
+            </p>
+            <Icone nom="chevron" className="h-4 w-4 -rotate-90 text-slate-400" />
+          </Link>
+        )
+      )}
 
       <div className="mt-4 flex gap-2">
         {PERIODES.map((p) => (
@@ -164,13 +209,13 @@ export default async function Accueil({ searchParams }) {
       <div className="mt-4 grid grid-cols-2 gap-3">
         <Link
           href="/ventes"
-          className="flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-4 py-3.5 text-sm font-semibold text-white active:bg-slate-700"
+          className="flex items-center justify-center gap-1.5 rounded-2xl bg-slate-900 px-2 py-3.5 text-[13px] font-semibold text-white active:bg-slate-700"
         >
           <Icone nom="plus" /> Nouvelle vente
         </Link>
         <Link
           href="/depenses"
-          className="flex items-center justify-center gap-2 rounded-2xl bg-white px-4 py-3.5 text-sm font-semibold text-slate-900 shadow-sm ring-1 ring-slate-200 active:bg-slate-50"
+          className="flex items-center justify-center gap-1.5 rounded-2xl bg-white px-2 py-3.5 text-[13px] font-semibold text-slate-900 shadow-sm ring-1 ring-slate-200 active:bg-slate-50"
         >
           <Icone nom="plus" /> Nouvelle dépense
         </Link>
