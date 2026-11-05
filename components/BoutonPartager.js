@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 
-export default function BoutonPartager({ titre, texte, className = "" }) {
+export default function BoutonPartager({ titre, texte, url, className = "" }) {
   const [copie, setCopie] = useState(false);
 
   async function partager() {
-    const lien = window.location.href;
+    const lien = url || window.location.href;
     try {
       if (navigator.share) {
         await navigator.share({ title: titre, text: texte, url: lien });
