@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState, useState } from "react";
 import { commander } from "../app/b/actions";
 import BoutonEnvoi from "./BoutonEnvoi";
@@ -172,8 +173,17 @@ export default function FormulaireCommande({ slug, produit, whatsapp, nomBoutiqu
             Envoyer ma commande
           </BoutonEnvoi>
 
-          <p className="text-xs text-slate-500">
-            Tes informations servent uniquement à traiter ta commande. Le vendeur te contactera pour la confirmer.
+          <p className="text-xs leading-relaxed text-slate-500">
+            En envoyant ta commande, tu acceptes que ton nom, ton numéro et ton adresse soient transmis à la boutique
+            pour traiter ta commande. Le vendeur te contactera pour la confirmer. Voir la{" "}
+            <Link href="/confidentialite" className="underline">
+              politique de confidentialité
+            </Link>{" "}
+            et les{" "}
+            <Link href="/conditions" className="underline">
+              conditions d’utilisation
+            </Link>
+            .
           </p>
         </form>
 
