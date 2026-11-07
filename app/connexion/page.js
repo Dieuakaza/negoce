@@ -72,6 +72,15 @@ export default async function PageConnexion({ searchParams }) {
           {inscription ? "Créer mon compte" : "Me connecter"}
         </BoutonEnvoi>
       </form>
+
+      {!inscription && (
+        <Link
+          href="/connexion/oubli"
+          className="mt-4 block text-center text-sm font-semibold text-emerald-700"
+        >
+          Mot de passe oublié ?
+        </Link>
+      )}
     </main>
   );
 }
