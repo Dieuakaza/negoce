@@ -2,6 +2,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import NavBas from "../components/NavBas";
 import BarreMarque from "../components/BarreMarque";
+import PiedLegal from "../components/PiedLegal";
 
 const inter = Inter({ subsets: ["latin"], display: "swap" });
 
@@ -29,6 +30,7 @@ export default function RootLayout({ children }) {
         <div className="mx-auto min-h-screen max-w-lg">
           <BarreMarque />
           {children}
+          <PiedLegal />
         </div>
         <NavBas />
       </body>
