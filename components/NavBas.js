@@ -56,7 +56,11 @@ const onglets = [
 export default function NavBas() {
   const chemin = usePathname();
   const [nouvelles, setNouvelles] = useState(0);
-  const masquee = chemin.startsWith("/connexion") || chemin.startsWith("/b/");
+  const masquee =
+    chemin.startsWith("/connexion") ||
+    chemin.startsWith("/b/") ||
+    chemin === "/confidentialite" ||
+    chemin === "/conditions";
 
   // Compte les nouvelles commandes (au chargement, puis toutes les 30 secondes)
   useEffect(() => {
