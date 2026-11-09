@@ -3,6 +3,7 @@ import "./globals.css";
 import NavBas from "../components/NavBas";
 import BarreMarque from "../components/BarreMarque";
 import PiedLegal from "../components/PiedLegal";
+import PanierFlottant from "../components/PanierFlottant";
 
 const inter = Inter({ subsets: ["latin"], display: "swap" });
 
@@ -32,6 +33,7 @@ export default function RootLayout({ children }) {
           {children}
           <PiedLegal />
         </div>
+        <PanierFlottant />
         <NavBas />
       </body>
     </html>
