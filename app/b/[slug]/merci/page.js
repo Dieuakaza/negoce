@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { getSupabasePublic } from "../../../../lib/supabase-public";
 import { fcfa } from "../../../../lib/format";
 import Icone from "../../../../components/Icone";
+import ViderPanier from "../../../../components/ViderPanier";
 
 export const metadata = {
   title: "Commande envoyée — NEGOCE",
@@ -51,6 +52,8 @@ export default async function PageMerci({ params }) {
 
   return (
     <main className="px-5 pb-10 pt-10">
+      <ViderPanier slug={slug} />
+
       <div className="flex flex-col items-center text-center">
         <span className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
           <Icone nom="verifie" className="h-8 w-8" epaisseur={2.4} />
