@@ -56,6 +56,7 @@ export default async function PageCompte() {
       </section>
 
       <div className="mt-1">
+        <Lien href="/statistiques" icone="graphique" titre="Statistiques" sous="Produits les plus vendus, ventes par jour" />
         <Lien href="/boutique" icone="sac" titre="Ma boutique en ligne" sous="Lien, WhatsApp, description" />
         <Lien href="/depenses" icone="billet" titre="Mes dépenses" sous="Transport, loyer, achats…" />
       </div>
